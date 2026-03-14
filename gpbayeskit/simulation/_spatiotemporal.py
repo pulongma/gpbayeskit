@@ -18,9 +18,15 @@ Let h = s₁ − s₂ (spatial lag), u = t₁ − t₂ (temporal lag),
 frozen_matern:
     C(h, u) = σ² M( |h − uλ| / φ ; ν )
 
+frozen_ch:
+    C(h, u) = σ² CH( |h − uλ| ; ν, α, φ )
+
 lagrangian_matern:
     C(h, u) = σ² |A(u)|^{−½} M( h_u / φ ; ν )
     h_u     = sqrt( (h − uλ)ᵀ A(u)⁻¹ (h − uλ) )
+
+lagrangian_ch:
+    C(h, u) = σ² |A(u)|^{−½} CH( h_u ; ν, α, φ )
 
 The Lagrangian formula uses the **u-dependent** prefactor |A(u)|^{-½}
 (not the constant prefactor in the package's SpatioTemporalGP kernel).
@@ -43,7 +49,7 @@ from dataclasses import dataclass
 
 import numpy as np
 from scipy.linalg import cholesky
-from scipy.special import kv, gamma as _gamma
+from scipy.special import kv, gamma as _gamma, hyperu as _hyperu
 
 from gpbayeskit.kernels._parametrisation import lam_vec_from_polar, build_Lambda
 
@@ -58,6 +64,19 @@ def _matern_vec(r: np.ndarray, nu: float) -> np.ndarray:
     m   = r > 0.0
     rm  = r[m]
     out[m] = (2.0 ** (1.0 - nu) / _gamma(nu)) * (rm ** nu) * kv(nu, rm)
+    return out
+
+
+
+
+def _ch_vec(r: np.ndarray, nu: float, tail: float, phi: float) -> np.ndarray:
+    """CH kernel CH(r; ν, α, β=φ) evaluated element-wise over an array of distances."""
+    r   = np.asarray(r, dtype=float)
+    out = np.ones_like(r)
+    m   = r > 0.0
+    rm  = r[m]
+    prefactor = _gamma(nu + tail) / _gamma(nu)
+    out[m] = prefactor * _hyperu(tail, 1.0 - nu, (rm / phi) ** 2)
     return out
 
 
@@ -112,14 +131,17 @@ class STSimulationResult:
 # Block builders
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _frozen_block(S, u, phi, nu, lam_vec):
+def _frozen_block(S, u, phi, nu, lam_vec, use_ch=False, tail=0.5):
     h     = S[:, None, :] - S[None, :, :]          # (n_s, n_s, 2)
     h_adv = h - u * lam_vec
     dist  = np.sqrt(np.maximum((h_adv ** 2).sum(axis=-1), 0.0))
-    return _matern_vec((dist / phi).ravel(), nu).reshape(len(S), len(S))
+    r_flat = dist.ravel()
+    if use_ch:
+        return _ch_vec(r_flat, nu, tail, phi).reshape(len(S), len(S))
+    return _matern_vec((r_flat / phi), nu).reshape(len(S), len(S))
 
 
-def _lagrangian_block(S, u, phi, nu, lam_vec, Lambda, rho):
+def _lagrangian_block(S, u, phi, nu, lam_vec, Lambda, rho, use_ch=False, tail=0.5):
     u_sc      = u / rho if rho > 0 else 0.0
     A         = u_sc ** 2 * Lambda + np.eye(2)
     A_inv     = np.linalg.inv(A)
@@ -129,11 +151,14 @@ def _lagrangian_block(S, u, phi, nu, lam_vec, Lambda, rho):
     h_shifted = h - u * lam_vec
     Ah        = h_shifted @ A_inv
     hu        = np.sqrt(np.maximum((Ah * h_shifted).sum(axis=-1), 0.0))
-    return prefactor * _matern_vec((hu / phi).ravel(), nu).reshape(len(S), len(S))
+    hu_flat   = hu.ravel()
+    if use_ch:
+        return prefactor * _ch_vec(hu_flat, nu, tail, phi).reshape(len(S), len(S))
+    return prefactor * _matern_vec((hu_flat / phi), nu).reshape(len(S), len(S))
 
 
 def _build_st_cov(S, t, sigma2, nugget, phi, nu, lam_vec,
-                  is_lagrangian, Lambda, rho):
+                  is_lagrangian, Lambda, rho, use_ch=False, tail=0.5):
     n_s, n_t = len(S), len(t)
     K        = np.zeros((n_s * n_t, n_s * n_t))
 
@@ -141,9 +166,11 @@ def _build_st_cov(S, t, sigma2, nugget, phi, nu, lam_vec,
         for j in range(i, n_t):
             u = float(t[i] - t[j])
             if is_lagrangian:
-                block = _lagrangian_block(S, u, phi, nu, lam_vec, Lambda, rho)
+                block = _lagrangian_block(S, u, phi, nu, lam_vec, Lambda, rho,
+                                          use_ch=use_ch, tail=tail)
             else:
-                block = _frozen_block(S, u, phi, nu, lam_vec)
+                block = _frozen_block(S, u, phi, nu, lam_vec,
+                                     use_ch=use_ch, tail=tail)
             rs, cs = i * n_s, j * n_s
             re, ce = rs + n_s, cs + n_s
             K[rs:re, cs:ce] = block
@@ -182,6 +209,7 @@ def _safe_chol(K, nugget):
 
 _VALID  = frozenset({"frozen_matern", "frozen_ch", "lagrangian_matern", "lagrangian_ch"})
 _LAG    = frozenset({"lagrangian_matern", "lagrangian_ch"})
+_CH     = frozenset({"frozen_ch", "lagrangian_ch"})
 
 
 def simulate_st(
@@ -199,6 +227,7 @@ def simulate_st(
     lambda1: float = 1.0,
     lambda2: float = 1.0,
     theta_Lambda: float = 0.0,
+    tail: float = 1.0,
     seed=None,
 ) -> STSimulationResult:
     """
@@ -223,6 +252,8 @@ def simulate_st(
     lambda1      : float  Larger eigenvalue of deformation matrix Λ.
     lambda2      : float  Smaller eigenvalue of Λ.
     theta_Lambda : float  Rotation angle of Λ (radians).
+    tail         : float  Tail-decay parameter α > 0 (CH models only;
+                          ignored for Matérn models).  Default 0.5.
     seed         : int or None  Random seed.
 
     Returns
@@ -248,9 +279,11 @@ def simulate_st(
 
     lam_vec = lam_vec_from_polar(lam0, theta0)
     is_lag  = m in _LAG
+    use_ch  = m in _CH
     Lambda  = build_Lambda(lambda1, lambda2, theta_Lambda) if is_lag else None
 
-    K = _build_st_cov(S, t, sigma2, nugget, phi, nu, lam_vec, is_lag, Lambda, rho)
+    K = _build_st_cov(S, t, sigma2, nugget, phi, nu, lam_vec,
+                      is_lag, Lambda, rho, use_ch=use_ch, tail=tail)
     L = _safe_chol(K, nugget)
 
     rng   = np.random.default_rng(seed)
@@ -258,10 +291,11 @@ def simulate_st(
 
     return STSimulationResult(
         field=field, S1=S1m, S2=S2m, t=t,
-        params=dict(phi=phi, nu=nu, lam0=lam0, theta0=theta0,
+        params=dict(phi=phi, nu=nu, tail=tail, lam0=lam0, theta0=theta0,
                     rho=rho, lambda1=lambda1, lambda2=lambda2, theta_Lambda=theta_Lambda),
         sigma2=sigma2, nugget=nugget, model=m,
     )
 
 
 __all__ = ["simulate_st", "STSimulationResult"]
+

@@ -1,3 +1,10 @@
 numpy>=1.24
 scipy>=1.10
+
+[dev]
+pytest>=7
+pytest-cov
+ruff
+
+[plot]
 matplotlib>=3.7
