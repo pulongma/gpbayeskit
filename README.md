@@ -1,6 +1,6 @@
 # gpbayeskit
 
-This toolbox is inspired by the R package GPBayes, but with extended features. 
+This toolbox is inspired by the R package [GPBayes](https://cran.r-project.org/package=GPBayes), but with extended features. 
 Gaussian processes ('GPs') have been widely used to model spatial 
 data, 'spatio'-temporal data, and computer experiments in diverse 
 areas of statistics including spatial statistics, 'spatio'-temporal 
