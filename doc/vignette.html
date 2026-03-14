@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>gpbayeskit — documentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#0F6E56;--teal-light:#E1F5EE;--teal-mid:#1D9E75;
+  --gray-bg:#F8F7F4;--border:#e2e0d8;
+  --code-bg:#F1EFE8;--code-border:#D3D1C7;
+  --text:#2C2C2A;--muted:#5F5E5A;--sidebar-w:220px;
+}
+html,body{height:100%}
+body{font-family:'IBM Plex Sans',sans-serif;color:var(--text);background:white;font-size:15px;line-height:1.7;display:flex}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--gray-bg);border-right:1px solid var(--border);padding:1.5rem 0;position:sticky;top:0;height:100vh;overflow-y:auto;font-size:13px}
+.sidebar-logo{padding:0 1.25rem 1.25rem;border-bottom:1px solid var(--border);margin-bottom:.75rem}
+.sidebar-logo .pkg{font-weight:500;font-size:15px;color:var(--teal);font-family:'IBM Plex Mono',monospace}
+.sidebar-logo .ver{font-size:11px;color:var(--muted);margin-top:2px}
+.sidebar-section{padding:.5rem 1.25rem .25rem;font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:.5rem}
+.sidebar a{display:block;padding:.3rem 1.25rem;color:var(--muted);text-decoration:none;border-left:2px solid transparent}
+.sidebar a:hover{color:var(--teal);background:rgba(29,158,117,.06)}
+.sidebar a.active{color:var(--teal);border-left-color:var(--teal);background:rgba(29,158,117,.08);font-weight:500}
+.content{flex:1;padding:2.5rem 3rem 4rem;max-width:820px;overflow-y:auto}
+h1{font-size:26px;font-weight:500;margin-bottom:.4rem}
+h2{font-size:19px;font-weight:500;margin:2.5rem 0 .75rem;padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+h3{font-size:15px;font-weight:500;margin:1.5rem 0 .5rem}
+p{margin-bottom:.9rem}
+.subtitle{font-size:15px;color:var(--muted);margin-bottom:1.75rem}
+ul{margin-left:1.4rem;margin-bottom:.9rem}
+li{margin-bottom:.25rem}
+code{font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--code-bg);border:1px solid var(--code-border);padding:1px 5px;border-radius:4px;color:#3C3489}
+pre{font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--code-bg);border:1px solid var(--code-border);border-radius:6px;padding:1.1rem 1.25rem;overflow-x:auto;margin:.75rem 0 1.25rem;line-height:1.6;white-space:pre}
+pre code{background:none;border:none;padding:0;color:var(--text)}
+.kw{color:#533BB7}.fn{color:#0F6E56}.cm{color:#888780}.st{color:#3C3489}.nb{color:#993C1D}
+.note{background:var(--teal-light);border-left:3px solid var(--teal-mid);border-radius:0 6px 6px 0;padding:.75rem 1rem;margin:.75rem 0 1.25rem;font-size:14px;color:#085041}
+.badge-row{display:flex;gap:8px;margin-bottom:1.75rem;flex-wrap:wrap}
+.badge{font-size:12px;font-family:'IBM Plex Mono',monospace;padding:3px 10px;border-radius:4px;border:1px solid var(--code-border);color:var(--muted);background:var(--code-bg)}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:1rem 0 1.5rem}
+.card{background:var(--gray-bg);border:1px solid var(--border);border-radius:8px;padding:.9rem 1rem}
+.card .tag{font-size:11px;font-family:'IBM Plex Mono',monospace;font-weight:500;color:var(--teal);margin-bottom:4px}
+.card .name{font-size:13px;font-weight:500;margin-bottom:3px}
+.card .desc{font-size:12px;color:var(--muted);line-height:1.5}
+.param-table{width:100%;border-collapse:collapse;font-size:13px;margin:.5rem 0 1.25rem}
+.param-table th{text-align:left;padding:6px 10px;border-bottom:2px solid var(--border);font-weight:500;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.param-table td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+.param-table td:first-child{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#533BB7;white-space:nowrap}
+.param-table td:nth-child(2){font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted)}
+hr{border:none;border-top:1px solid var(--border);margin:2rem 0}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="pkg">gpbayeskit</div>
+    <div class="ver">v0.1.0 &mdash; Python &ge;3.10</div>
+  </div>
+  <div class="sidebar-section">Getting started</div>
+  <a href="#install" class="active">Installation</a>
+  <a href="#quickstart">Quick start</a>
+  <div class="sidebar-section">Models</div>
+  <a href="#spatial">Spatial GP</a>
+  <a href="#spatiotemporal">Spatio-temporal GP</a>
+  <div class="sidebar-section">Data</div>
+  <a href="#stdata">Space-time data</a>
+  <a href="#simulation">Simulation</a>
+  <div class="sidebar-section">Visualization</div>
+  <a href="#plotting">Plotting</a>
+  <div class="sidebar-section">Reference</div>
+  <a href="#package-structure">Package layout</a>
+</nav>
+
+<main class="content">
+
+  <h1>gpbayeskit</h1>
+  <p class="subtitle">Gaussian process tools for Bayesian spatio-temporal modelling</p>
+
+  <div class="badge-row">
+    <span class="badge">Python &ge; 3.10</span>
+    <span class="badge">NumPy &middot; SciPy &middot; pandas</span>
+    <span class="badge">MIT licence</span>
+  </div>
+
+  <p><strong>gpbayeskit</strong> provides a composable toolkit for fitting, simulating, and visualising Gaussian process models over space and space-time. It implements the Mat&eacute;rn, confluent hypergeometric (CH), and Lagrangian covariance families, a self-describing parameter system that handles REML optimisation automatically, space-time data containers inspired by R&rsquo;s <em>spacetime</em> package, and publication-ready diagnostic plots &mdash; all with a consistent API.</p>
+
+  <!-- ─── Installation ─────────────────────────────────────────────────── -->
+  <hr id="install">
+  <h2>Installation</h2>
+
+  <h3>From source (recommended during development)</h3>
+  <pre><code><span class="cm"># clone and install in editable mode</span>
+git clone https://github.com/you/gpbayeskit.git
+cd gpbayeskit
+pip install -e .
+
+<span class="cm"># with optional plotting dependencies</span>
+pip install -e ".[plot]"
+
+<span class="cm"># with development tools (pytest, ruff)</span>
+pip install -e ".[plot,dev]"</code></pre>
+
+  <h3>Dependencies</h3>
+  <ul>
+    <li><strong>Required</strong>: <code>numpy &ge; 1.24</code>, <code>scipy &ge; 1.10</code>, <code>pandas &ge; 1.5</code></li>
+    <li><strong>Optional</strong>: <code>matplotlib &ge; 3.7</code> for all plotting functions</li>
+  </ul>
+
+  <div class="note">
+    <strong>Editable install note:</strong> If you see
+    <code>ImportError: cannot import name 'KernelBuilder' from 'gpbayeskit.kernels'</code>
+    after cloning, verify that every subdirectory under <code>gpbayeskit/</code> contains an
+    <code>__init__.py</code>. Without it Python treats the directory as a namespace package
+    with no exports. Run <code>pip install -e . --force-reinstall</code> once all files are in place.
+  </div>
+
+  <!-- ─── Quick start ──────────────────────────────────────────────────── -->
+  <hr id="quickstart">
+  <h2>Quick start</h2>
+
+  <p>Simulate data, fit a spatial GP, and evaluate predictions in a few lines:</p>
+  <pre><code><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">from</span> gpbayeskit.simulation <span class="kw">import</span> simulate
+<span class="kw">from</span> gpbayeskit <span class="kw">import</span> SpatialGP
+
+rng  = np.random.default_rng(<span class="nb">42</span>)
+X    = rng.uniform(<span class="nb">0</span>, <span class="nb">1</span>, (<span class="nb">100</span>, <span class="nb">2</span>))
+sim  = simulate(X, kernel_type=<span class="st">"matern52"</span>, phi=<span class="nb">0.3</span>, sigma2=<span class="nb">2.0</span>, seed=<span class="nb">0</span>)
+
+X_tr, y_tr = X[:<span class="nb">80</span>], sim.y[:<span class="nb">80</span>]
+X_te, y_te = X[<span class="nb">80</span>:], sim.y[<span class="nb">80</span>:]
+
+gp = <span class="fn">SpatialGP</span>(X_tr, y_tr, kernel_type=<span class="st">"matern52"</span>)
+gp.fit()
+gp.summary()
+
+mean, var = gp.predict(X_te)
+scores    = gp.score(X_te, y_te)
+<span class="kw">print</span>(scores[<span class="st">"rmse"</span>], scores[<span class="st">"coverage_95"</span>])</code></pre>
+
+  <!-- ─── Spatial GP ───────────────────────────────────────────────────── -->
+  <hr id="spatial">
+  <h2>Spatial GP</h2>
+
+  <p><code>SpatialGP</code> supports six kernel families and three anisotropy forms. Parameters are declared as class-level descriptors; <code>fit()</code> maximises the REML log marginal likelihood via L-BFGS-B. All fitting, prediction, scoring, and summary logic is inherited from <code>BaseGP</code> &mdash; subclasses only implement <code>covariance()</code>.</p>
+
+  <h3>Kernel families</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="tag">matern</div>
+      <div class="name">General Mat&eacute;rn</div>
+      <div class="desc">Smoothness &nu; is a free parameter; includes exp, 3/2, 5/2 as special cases</div>
+    </div>
+    <div class="card">
+      <div class="tag">exp / matern32 / matern52</div>
+      <div class="name">Fixed smoothness</div>
+      <div class="desc">&nu; auto-fixed to 0.5, 1.5, or 2.5 respectively</div>
+    </div>
+    <div class="card">
+      <div class="tag">ch</div>
+      <div class="name">Confluent hypergeometric</div>
+      <div class="desc">Adds tail-decay parameter &alpha; for heavy-tailed fields</div>
+    </div>
+    <div class="card">
+      <div class="tag">gauss</div>
+      <div class="name">Squared-exponential</div>
+      <div class="desc">&nu; = &infin;; infinitely differentiable fields</div>
+    </div>
+  </div>
+
+  <h3>Anisotropy forms</h3>
+  <table class="param-table">
+    <tr><th>Form</th><th>&phi; shape</th><th>Description</th></tr>
+    <tr><td>isotropic</td><td>scalar</td><td>Single range for all directions</td></tr>
+    <tr><td>ard</td><td>(d,)</td><td>Automatic relevance determination &mdash; one range per dimension</td></tr>
+    <tr><td>tensor</td><td>(d,)</td><td>Product kernel &mdash; separable across dimensions</td></tr>
+  </table>
+
+  <h3>Fitting with fixed and initial values</h3>
+  <pre><code><span class="kw">from</span> gpbayeskit <span class="kw">import</span> SpatialGP
+
+gp = <span class="fn">SpatialGP</span>(X_tr, y_tr, kernel_type=<span class="st">"matern"</span>, kernel_form=<span class="st">"ard"</span>)
+gp.fit(
+    fix_nu=<span class="nb">1.5</span>,        <span class="cm"># fix smoothness; excluded from optimisation</span>
+    phi_init=<span class="nb">0.3</span>,      <span class="cm"># starting value for the d-vector of ranges</span>
+    nugget_init=<span class="nb">0.01</span>,  <span class="cm"># starting value for nugget</span>
+)</code></pre>
+
+  <h3>Fit keyword convention</h3>
+  <table class="param-table">
+    <tr><th>Argument</th><th>Type</th><th>Effect</th></tr>
+    <tr><td>fix_&lt;name&gt;</td><td>float</td><td>Fix to constant; excluded from optimisation</td></tr>
+    <tr><td>&lt;name&gt;_init</td><td>float or array</td><td>Set starting value before optimisation</td></tr>
+    <tr><td>method</td><td>str</td><td>scipy minimiser (default <code>"L-BFGS-B"</code>)</td></tr>
+  </table>
+
+  <!-- ─── Spatio-temporal GP ───────────────────────────────────────────── -->
+  <hr id="spatiotemporal">
+  <h2>Spatio-temporal GP</h2>
+
+  <p><code>SpatioTemporalGP</code> extends <code>BaseGP</code> with Lagrangian and frozen-field covariance functions. The input array <code>X</code> has shape <code>(n, d_space + 1)</code> where the <strong>last column is time</strong>.</p>
+
+  <h3>Models</h3>
+  <table class="param-table">
+    <tr><th>Model</th><th>Formula C(h, u) / &sigma;&sup2;</th></tr>
+    <tr><td>frozen_matern</td><td>M( |h &minus; u&lambda;| / &phi; ; &nu; )</td></tr>
+    <tr><td>frozen_ch</td><td>CH( |h &minus; u&lambda;| ; &nu;, &alpha;, &phi; )</td></tr>
+    <tr><td>lagrangian_matern</td><td>|I + &rho;&sup2;&Lambda;/2|<sup>&minus;&frac12;</sup> M( h<sub>u</sub> / &phi; ; &nu; )</td></tr>
+    <tr><td>lagrangian_ch</td><td>|I + &rho;&sup2;&Lambda;/2|<sup>&minus;&frac12;</sup> CH( h<sub>u</sub> ; &nu;, &alpha;, &phi; )</td></tr>
+  </table>
+
+  <p>The Lagrangian distance is <code>h<sub>u</sub> = &radic;((h &minus; u&lambda;)<sup>T</sup>(u&sup2;&Lambda; + I)<sup>&minus;1</sup>(h &minus; u&lambda;))</code>, where <code>&lambda; = &lambda;<sub>0</sub>[cos &theta;<sub>0</sub>, sin &theta;<sub>0</sub>]</code> is the advection vector and <code>&Lambda; = U diag(&lambda;<sub>1</sub>, &lambda;<sub>2</sub>) U<sup>T</sup></code> is the deformation matrix.</p>
+
+  <h3>Usage</h3>
+  <pre><code><span class="kw">from</span> gpbayeskit <span class="kw">import</span> SpatioTemporalGP
+
+<span class="cm"># X: (n, 3) — columns s1, s2, t</span>
+gp = <span class="fn">SpatioTemporalGP</span>(X_tr, y_tr, model=<span class="st">"lagrangian_matern"</span>, d_space=<span class="nb">2</span>)
+gp.fit(
+    fix_nu=<span class="nb">1.5</span>,
+    fix_nugget=<span class="nb">0.01</span>,
+    lam0_init=<span class="nb">0.3</span>,     <span class="cm"># advection magnitude starting value</span>
+    theta0_init=<span class="nb">0.0</span>,   <span class="cm"># advection direction (radians)</span>
+)
+gp.summary()
+mean, var = gp.predict(X_te)</code></pre>
+
+  <h3>Parameters</h3>
+  <table class="param-table">
+    <tr><th>Name</th><th>Default</th><th>Description</th></tr>
+    <tr><td>phi</td><td>1.0</td><td>Spatial range &phi;</td></tr>
+    <tr><td>nu</td><td>1.5</td><td>Smoothness &nu;</td></tr>
+    <tr><td>nugget</td><td>1e-6</td><td>Nugget ratio &tau;&sup2;</td></tr>
+    <tr><td>lam0</td><td>0.5</td><td>Advection magnitude &lambda;<sub>0</sub> &ge; 0</td></tr>
+    <tr><td>theta0</td><td>0.0</td><td>Advection direction &theta;<sub>0</sub> (radians)</td></tr>
+    <tr><td>rho</td><td>1.0</td><td>Temporal range &rho; (Lagrangian only)</td></tr>
+    <tr><td>lambda1</td><td>1.0</td><td>Larger eigenvalue of &Lambda;</td></tr>
+    <tr><td>lambda2</td><td>0.5</td><td>Smaller eigenvalue of &Lambda;</td></tr>
+    <tr><td>theta_Lambda</td><td>0.0</td><td>Rotation angle of &Lambda; (radians)</td></tr>
+  </table>
+
+  <!-- ─── Space-time data ──────────────────────────────────────────────── -->
+  <hr id="stdata">
+  <h2>Space-time data containers</h2>
+
+  <p><code>gpbayeskit.stdata</code> provides four container classes for real-world spatio-temporal data, inspired by R&rsquo;s <em>spacetime</em> package (Pebesma 2012). All classes share a common base with <code>to_long()</code>, <code>to_time_wide()</code>, <code>to_space_wide()</code>, <code>summary()</code>, and cross-format conversion methods.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="tag">STF</div>
+      <div class="name">Full grid</div>
+      <div class="desc">All n_loc &times; n_t combinations present. 3-D tensor (n_t, n_loc, n_var).</div>
+    </div>
+    <div class="card">
+      <div class="tag">STS</div>
+      <div class="name">Sparse grid</div>
+      <div class="desc">Same declared lattice as STF, but with missing entries tracked explicitly.</div>
+    </div>
+    <div class="card">
+      <div class="tag">STI</div>
+      <div class="name">Irregular</div>
+      <div class="desc">Fully arbitrary (s, t) pairs. Direct input to SpatioTemporalGP.</div>
+    </div>
+    <div class="card">
+      <div class="tag">STT</div>
+      <div class="name">Trajectories</div>
+      <div class="desc">Ordered paths partitioned by an ID column. Animal movement, floats, vehicles.</div>
+    </div>
+  </div>
+
+  <h3>Three output formats</h3>
+  <table class="param-table">
+    <tr><th>Method</th><th>Rows</th><th>Columns</th></tr>
+    <tr><td>to_long()</td><td>one per (s, t) observation</td><td>[coord_names&hellip;, time, vars&hellip;]</td></tr>
+    <tr><td>to_time_wide()</td><td>spatial locations</td><td>time points (one column per time step)</td></tr>
+    <tr><td>to_space_wide()</td><td>time points</td><td>spatial locations (one column per location)</td></tr>
+  </table>
+
+  <h3>STF &rarr; STI &rarr; model</h3>
+  <pre><code><span class="kw">from</span> gpbayeskit.simulation <span class="kw">import</span> simulate_st
+<span class="kw">from</span> gpbayeskit.stdata <span class="kw">import</span> STF, STI
+
+<span class="cm"># build STF directly from a simulation result</span>
+sim = <span class="fn">simulate_st</span>(n_space=<span class="nb">20</span>, t_values=np.linspace(<span class="nb">0</span>, <span class="nb">1</span>, <span class="nb">6</span>),
+                   phi=<span class="nb">0.25</span>, lam0=<span class="nb">0.4</span>, seed=<span class="nb">0</span>)
+stf = STF.<span class="fn">from_simulation</span>(sim)
+
+<span class="cm"># inspect</span>
+stf.summary()
+stf.at_time(<span class="nb">0.0</span>)        <span class="cm"># spatial snapshot as DataFrame</span>
+stf.at_location(<span class="nb">0</span>)     <span class="cm"># time series at location 0</span>
+stf.to_time_wide()      <span class="cm"># (n_loc, n_t) DataFrame — locs as rows</span>
+stf.to_space_wide()     <span class="cm"># (n_t, n_loc) DataFrame — times as rows</span>
+
+<span class="cm"># convert to STI for model fitting</span>
+sti = stf.to_sti()
+train, test = sti.train_test_split(test_fraction=<span class="nb">0.2</span>, seed=<span class="nb">1</span>)
+X_tr, y_tr  = train.to_model_arrays()   <span class="cm"># (n, 3), (n, 1)</span></code></pre>
+
+  <h3>STT — trajectory data</h3>
+  <pre><code><span class="kw">from</span> gpbayeskit.stdata <span class="kw">import</span> STI, STT
+
+<span class="cm"># each STI is one trajectory (already sorted by time)</span>
+trajs = [STI(coords_i, times_i, data=z_i, var_names=[<span class="st">"z"</span>])
+         <span class="kw">for</span> coords_i, times_i, z_i <span class="kw">in</span> trajectory_data]
+
+stt = STT.<span class="fn">from_sti_list</span>(trajs)
+stt.summary()
+stt.arc_lengths()              <span class="cm"># total path length per trajectory</span>
+stt.bounding_boxes()           <span class="cm"># spatial / temporal extents</span>
+traj0 = stt.<span class="fn">get_trajectory</span>(<span class="nb">0</span>)  <span class="cm"># returns an STI</span></code></pre>
+
+  <!-- ─── Simulation ───────────────────────────────────────────────────── -->
+  <hr id="simulation">
+  <h2>Simulation</h2>
+
+  <h3>Spatial simulation</h3>
+  <pre><code><span class="kw">from</span> gpbayeskit.simulation <span class="kw">import</span> simulate
+
+sim = <span class="fn">simulate</span>(
+    X,
+    kernel_type=<span class="st">"matern52"</span>,
+    phi=<span class="nb">0.3</span>, sigma2=<span class="nb">2.0</span>, nugget=<span class="nb">1e-4</span>,
+    seed=<span class="nb">42</span>, return_latent=<span class="kw">True</span>,
+)
+sim.y       <span class="cm"># (n, 1)  observed draw (with nugget noise)</span>
+sim.latent  <span class="cm"># (n, 1)  noise-free latent draw</span>
+sim.cov     <span class="cm"># (n, n)  full covariance matrix</span></code></pre>
+
+  <h3>Spatio-temporal simulation</h3>
+
+  <p><code>simulate_st</code> builds the full joint space-time covariance across all (space &times; time) locations and makes a single draw, so temporal correlations and the advection pattern are faithfully preserved.</p>
+
+  <pre><code><span class="kw">from</span> gpbayeskit.simulation <span class="kw">import</span> simulate_st
+
+sim = <span class="fn">simulate_st</span>(
+    n_space=<span class="nb">20</span>,
+    t_values=np.linspace(<span class="nb">0</span>, <span class="nb">1</span>, <span class="nb">6</span>),
+    model=<span class="st">"lagrangian_matern"</span>,
+    phi=<span class="nb">0.25</span>, nu=<span class="nb">1.5</span>, sigma2=<span class="nb">1.0</span>, nugget=<span class="nb">1e-4</span>,
+    lam0=<span class="nb">0.4</span>, theta0=np.deg2rad(<span class="nb">30</span>),  <span class="cm"># advect north-east at 30 deg</span>
+    rho=<span class="nb">0.5</span>, lambda1=<span class="nb">1.5</span>, lambda2=<span class="nb">0.5</span>,
+    seed=<span class="nb">42</span>,
+)
+sim.field.shape    <span class="cm"># (6, 20, 20) — one 2D snapshot per time step</span>
+sim.lam_vec        <span class="cm"># advection vector lambda</span></code></pre>
+
+  <div class="note">
+    <strong>PSD note:</strong> The simulation uses the u-dependent prefactor
+    |A(u)|<sup>&minus;&frac12;</sup> where A(u) = (u/&rho;)&sup2;&Lambda; + I.
+    This is the mathematically correct Lagrangian form (Stein 2005) that guarantees
+    C(0, 0) = &sigma;&sup2; and a positive-definite covariance matrix. A constant
+    prefactor, as used in some parameterisations, is not generally positive semi-definite.
+  </div>
+
+  <!-- ─── Plotting ─────────────────────────────────────────────────────── -->
+  <hr id="plotting">
+  <h2>Plotting</h2>
+
+  <p>All functions require <code>matplotlib</code> (install with <code>pip install gpbayeskit[plot]</code>) and return <code>(fig, axes)</code> without calling <code>plt.show()</code>.</p>
+
+  <h3>Log-likelihood profiles</h3>
+  <pre><code><span class="kw">from</span> gpbayeskit.plotting <span class="kw">import</span> plot_loglik, plot_loglik_panel
+
+<span class="cm"># single profile: log-lik vs phi with nu and nugget fixed</span>
+grid, vals, ax = <span class="fn">plot_loglik</span>(
+    X, y,
+    param=<span class="st">"phi"</span>, param_range=(<span class="nb">0.05</span>, <span class="nb">2.0</span>),
+    fixed_params={<span class="st">"nu"</span>: <span class="nb">1.5</span>, <span class="st">"nugget"</span>: <span class="nb">0.01</span>},
+    kernel_type=<span class="st">"matern"</span>, log_x=<span class="kw">True</span>,
+)
+
+<span class="cm"># panel of profiles</span>
+specs = [
+    {<span class="st">"param"</span>: <span class="st">"phi"</span>,    <span class="st">"param_range"</span>: (<span class="nb">0.05</span>, <span class="nb">2.0</span>),
+     <span class="st">"fixed_params"</span>: {<span class="st">"nu"</span>: <span class="nb">1.5</span>, <span class="st">"nugget"</span>: <span class="nb">0.01</span>}, <span class="st">"log_x"</span>: <span class="kw">True</span>},
+    {<span class="st">"param"</span>: <span class="st">"nu"</span>,     <span class="st">"param_range"</span>: (<span class="nb">0.5</span>,  <span class="nb">3.0</span>),
+     <span class="st">"fixed_params"</span>: {<span class="st">"phi"</span>: <span class="nb">0.3</span>, <span class="st">"nugget"</span>: <span class="nb">0.01</span>}},
+    {<span class="st">"param"</span>: <span class="st">"nugget"</span>, <span class="st">"param_range"</span>: (<span class="nb">1e-5</span>, <span class="nb">0.1</span>),
+     <span class="st">"fixed_params"</span>: {<span class="st">"phi"</span>: <span class="nb">0.3</span>,  <span class="st">"nu"</span>: <span class="nb">1.5</span>},   <span class="st">"log_x"</span>: <span class="kw">True</span>},
+]
+fig, axes = <span class="fn">plot_loglik_panel</span>(X, y, specs, kernel_type=<span class="st">"matern"</span>)</code></pre>
+
+  <h3>Space-time covariance surfaces</h3>
+  <pre><code><span class="kw">from</span> gpbayeskit.plotting <span class="kw">import</span> plot_cov_st_1d, plot_cov_st_2d
+
+params = <span class="kw">dict</span>(phi=<span class="nb">0.5</span>, nu=<span class="nb">1.5</span>, lam0=<span class="nb">0.4</span>, theta0=<span class="nb">0.2</span>,
+              rho=<span class="nb">0.8</span>, lambda1=<span class="nb">1.2</span>, lambda2=<span class="nb">0.4</span>, theta_Lambda=<span class="nb">0.3</span>)
+
+<span class="cm"># 1D contour: C(h, u) for a 1D spatial domain</span>
+<span class="cm"># advection appears as a tilted ridge</span>
+fig, ax = <span class="fn">plot_cov_st_1d</span>(params,
+                          h_range=(-<span class="nb">2</span>, <span class="nb">2</span>), u_range=(<span class="nb">0</span>, <span class="nb">2</span>),
+                          model=<span class="st">"lagrangian_matern"</span>,
+                          title=<span class="st">"Lagrangian covariance C(h, u)"</span>)
+
+<span class="cm"># 2D panel: C(h1, h2; u) at several temporal lags</span>
+<span class="cm"># white arrow marks the advection displacement u*lambda</span>
+fig, axes = <span class="fn">plot_cov_st_2d</span>(params,
+                            h_range=(-<span class="nb">2</span>, <span class="nb">2</span>),
+                            u_values=[<span class="nb">0</span>, <span class="nb">0.5</span>, <span class="nb">1.0</span>, <span class="nb">2.0</span>],
+                            model=<span class="st">"lagrangian_matern"</span>,
+                            title=<span class="st">"Spatial covariance slices"</span>)
+
+<span class="cm"># both functions also accept a fitted SpatioTemporalGP directly</span>
+fig, axes = <span class="fn">plot_cov_st_2d</span>(fitted_gp,
+                            h_range=(-<span class="nb">2</span>, <span class="nb">2</span>),
+                            u_values=[<span class="nb">0</span>, <span class="nb">1</span>, <span class="nb">2</span>])</code></pre>
+
+  <h3>Spatio-temporal realisations</h3>
+  <pre><code><span class="kw">from</span> gpbayeskit.simulation <span class="kw">import</span> simulate_st
+<span class="kw">from</span> gpbayeskit.plotting   <span class="kw">import</span> plot_st_realizations
+
+sim = <span class="fn">simulate_st</span>(n_space=<span class="nb">25</span>, t_values=np.linspace(<span class="nb">0</span>, <span class="nb">1</span>, <span class="nb">6</span>),
+                   lam0=<span class="nb">0.4</span>, theta0=np.deg2rad(<span class="nb">30</span>), seed=<span class="nb">0</span>)
+
+fig, axes = <span class="fn">plot_st_realizations</span>(
+    sim, ncols=<span class="nb">3</span>,
+    show_tracer=<span class="kw">True</span>,      <span class="cm"># gold dot drifts with advection velocity</span>
+    show_velocity=<span class="kw">True</span>,    <span class="cm"># arrow shows advection direction</span>
+    title=<span class="st">"Lagrangian GP realisation &mdash; NE advection"</span>,
+)</code></pre>
+
+  <!-- ─── Package layout ───────────────────────────────────────────────── -->
+  <hr id="package-structure">
+  <h2>Package layout</h2>
+  <pre><code>gpbayeskit/
+&boxvr;&boxh;&boxh; __init__.py              &larr; top-level exports
+&boxvr;&boxh;&boxh; parameters.py            &larr; Parameter descriptor + _ParamEntry
+&boxvr;&boxh;&boxh; kernels/
+&boxv;   &boxvr;&boxh;&boxh; __init__.py
+&boxv;   &boxvr;&boxh;&boxh; _functions.py        &larr; matern_kernel, ch_kernel
+&boxv;   &boxvr;&boxh;&boxh; _parametrisation.py  &larr; lam_vec_from_polar, build_Lambda
+&boxv;   &boxvr;&boxh;&boxh; _lagrangian_fns.py   &larr; scalar + matrix Lagrangian covariances
+&boxv;   &boxvr;&boxh;&boxh; _spatial.py          &larr; KernelBuilder
+&boxv;   &boxur;&boxh;&boxh; _lagrangian.py       &larr; LagrangianKernelBuilder
+&boxvr;&boxh;&boxh; models/
+&boxv;   &boxvr;&boxh;&boxh; base.py              &larr; BaseGP (REML, predict, score, summary)
+&boxv;   &boxvr;&boxh;&boxh; spatial.py           &larr; SpatialGP
+&boxv;   &boxur;&boxh;&boxh; spatiotemporal.py    &larr; SpatioTemporalGP
+&boxvr;&boxh;&boxh; stdata/
+&boxv;   &boxvr;&boxh;&boxh; _base.py             &larr; _STBase (shared interface)
+&boxv;   &boxvr;&boxh;&boxh; _stf.py              &larr; STF &mdash; full grid
+&boxv;   &boxvr;&boxh;&boxh; _sts.py              &larr; STS &mdash; sparse grid
+&boxv;   &boxvr;&boxh;&boxh; _sti.py              &larr; STI &mdash; irregular
+&boxv;   &boxur;&boxh;&boxh; _stt.py              &larr; STT &mdash; trajectories
+&boxvr;&boxh;&boxh; simulation/
+&boxv;   &boxvr;&boxh;&boxh; __init__.py          &larr; simulate, SimulationResult
+&boxv;   &boxur;&boxh;&boxh; _spatiotemporal.py   &larr; simulate_st, STSimulationResult
+&boxvr;&boxh;&boxh; plotting/
+&boxv;   &boxvr;&boxh;&boxh; _likelihood.py       &larr; plot_loglik, plot_loglik_panel
+&boxv;   &boxvr;&boxh;&boxh; _contours.py         &larr; plot_cov_st_1d, plot_cov_st_2d
+&boxv;   &boxur;&boxh;&boxh; _realizations.py     &larr; plot_st_realizations
+&boxur;&boxh;&boxh; utils/
+    &boxur;&boxh;&boxh; __init__.py          &larr; gp_scores, distance functions, validate_*</code></pre>
+
+</main>
+
+<script>
+const links = document.querySelectorAll('.sidebar a');
+const content = document.querySelector('.content');
+
+function updateActive() {
+  const scrollY = content.scrollTop;
+  let current = links[0];
+  links.forEach(a => {
+    const id = a.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top < 100) current = a;
+  });
+  links.forEach(l => l.classList.remove('active'));
+  current.classList.add('active');
+}
+
+content.addEventListener('scroll', updateActive, {passive: true});
+
+links.forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const id = a.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({behavior: 'smooth', block: 'start'});
+  });
+});
+</script>
+</body>
+</html>
